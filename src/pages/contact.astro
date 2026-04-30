@@ -1,0 +1,77 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Contact — Smith & Cohen"
+  description="Get in touch with Smith & Cohen."
+>
+  <article class="max-w-xl mx-auto px-6 pt-32 pb-16">
+    <header class="text-center mb-12">
+      <p class="tracked text-xs text-[var(--color-text-muted)] mb-4">— Get in touch —</p>
+      <h1 class="display-title text-4xl md:text-5xl mb-6">Contact</h1>
+      <p class="text-base text-[var(--color-text-muted)]">
+        Drop us a line — bookings, press, or just to say hello.
+      </p>
+    </header>
+
+    <form
+      name="contact"
+      method="POST"
+      action="/contact-success"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      class="space-y-6"
+    >
+      <input type="hidden" name="form-name" value="contact" />
+      <p class="hidden">
+        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+      </p>
+
+      <div>
+        <label for="name" class="tracked text-xs text-[var(--color-text-muted)] block mb-2">
+          Name
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          class="w-full bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+        />
+      </div>
+
+      <div>
+        <label for="email" class="tracked text-xs text-[var(--color-text-muted)] block mb-2">
+          Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          class="w-full bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+        />
+      </div>
+
+      <div>
+        <label for="message" class="tracked text-xs text-[var(--color-text-muted)] block mb-2">
+          Message
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          required
+          rows="6"
+          class="w-full bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors resize-y"
+        ></textarea>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="pill cursor-pointer">
+          Send
+        </button>
+      </div>
+    </form>
+  </article>
+</Layout>

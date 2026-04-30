@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, "SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas", monospace;
+
+  --color-text: #f5f5f5;
+  --color-text-muted: #8b8b8b;
+  --color-text-faint: #555;
+  --color-background: #0d0d12;
+  --color-background-soft: #16161c;
+  --color-accent: #f5f5f5;
+  --color-accent-hover: #ffffff;
+  --color-border: #2a2a32;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.tracked {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.tracked-tight {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.display-title {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.prose {
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+}
+
+.prose a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-text-muted);
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-text);
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: var(--color-text);
+  color: var(--color-background);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: opacity 0.15s ease;
+}
+
+.pill:hover {
+  opacity: 0.85;
+}
+
+.pill-ghost {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.pill-ghost:hover {
+  border-color: var(--color-text);
+}

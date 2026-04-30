@@ -1,0 +1,19 @@
+---
+interface Props {
+  variant?: 'default' | 'minimal';
+}
+const { variant = 'default' } = Astro.props;
+---
+
+{variant === 'default' && (
+  <header class="absolute top-0 left-0 right-0 z-50 py-6">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <a
+        href="/"
+        class="tracked text-sm font-medium text-[var(--color-text)] hover:opacity-75 transition-opacity"
+      >
+        Smith &amp; Cohen
+      </a>
+    </div>
+  </header>
+)}
