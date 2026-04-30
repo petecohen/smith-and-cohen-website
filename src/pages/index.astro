@@ -33,7 +33,7 @@ const links = [
           Smith &amp; Cohen
         </h1>
 
-        <ul class="space-y-2.5 mb-10 text-base md:text-lg">
+        <ul class="space-y-2.5 mb-8 text-base md:text-lg">
           {links.map(link => (
             <li>
               <a
@@ -47,6 +47,15 @@ const links = [
             </li>
           ))}
         </ul>
+
+        <a
+          href="https://sodastream.net.au"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors mb-10 italic"
+        >
+          Previously known as Sodastream →
+        </a>
 
         <div class="flex items-center gap-3">
           <a href="/contact" class="pill">Contact</a>
