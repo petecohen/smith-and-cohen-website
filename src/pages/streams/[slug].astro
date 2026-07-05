@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import MessageBoard from '../../components/MessageBoard.astro';
+import { SOCIALS } from '../../consts';
 
 export async function getStaticPaths() {
   const streams = (await getCollection('streams')).filter(
@@ -39,7 +40,9 @@ const statusLine = {
 
 <Layout
   title={`${title} — Smith & Cohen`}
-  description={`${title}, a live-stream session with ${guest}.`}
+  description={guest
+    ? `${title}, a live-stream session with ${guest}.`
+    : `${title}, a Smith & Cohen live-stream session.`}
 >
   <article class="max-w-3xl mx-auto px-6 pt-32 pb-16">
     <header class="text-center mb-12">
@@ -47,11 +50,13 @@ const statusLine = {
         {status === 'live' ? '— ● Live now —' : `— ${statusLine} —`}
       </p>
       <h1 class="display-title text-4xl md:text-5xl mb-4">{title}</h1>
-      <p class="text-base text-[var(--color-text-muted)]">with {guest}</p>
+      {guest && (
+        <p class="text-base text-[var(--color-text-muted)]">with {guest}</p>
+      )}
     </header>
 
-    {youtubeId ? (
-      <div class="mb-12 aspect-video">
+    {youtubeId && (status === 'live' || status === 'archived') && (
+      <div class="mb-8 aspect-video">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
           title={title}
@@ -60,12 +65,25 @@ const statusLine = {
           allowfullscreen
         ></iframe>
       </div>
-    ) : (
-      status === 'announced' && (
-        <p class="mb-12 text-center text-[var(--color-text-muted)] border border-[var(--color-border)] px-6 py-8">
-          The stream will appear right here when we go live.
-        </p>
-      )
+    )}
+
+    {status === 'live' && (
+      <p class="mb-12 text-center text-[var(--color-text-muted)]">
+        {youtubeId ? 'Also streaming live on' : 'We are live right now on'}{' '}
+        <a href={SOCIALS.instagram} target="_blank" rel="noopener noreferrer" class="text-[var(--color-text)] underline underline-offset-4">Instagram</a>
+        {' & '}
+        <a href={SOCIALS.facebook} target="_blank" rel="noopener noreferrer" class="text-[var(--color-text)] underline underline-offset-4">Facebook</a>.
+      </p>
+    )}
+
+    {status === 'announced' && (
+      <p class="mb-12 text-center text-[var(--color-text-muted)] border border-[var(--color-border)] px-6 py-8">
+        This session streams {dateLabel} · {timeLabel} AWST. Watch here when we go
+        live, or over on{' '}
+        <a href={SOCIALS.instagram} target="_blank" rel="noopener noreferrer" class="text-[var(--color-text)] underline underline-offset-4">Instagram</a>
+        {' & '}
+        <a href={SOCIALS.facebook} target="_blank" rel="noopener noreferrer" class="text-[var(--color-text)] underline underline-offset-4">Facebook</a>.
+      </p>
     )}
 
     {hasBody && (
@@ -77,7 +95,7 @@ const statusLine = {
     {images.length > 0 && (
       <section class="mb-12">
         <h2 class="tracked text-xs text-[var(--color-text-muted)] mb-6 text-center">
-          — From {guest} —
+          — {guest ? `From ${guest}` : 'From the session'} —
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {images.map((image) => (
@@ -116,7 +134,9 @@ const statusLine = {
 
     {guestLinks.length > 0 && (
       <footer class="text-center border-t border-[var(--color-border)] pt-8">
-        <p class="tracked text-xs text-[var(--color-text-faint)] mb-4">Find {guest}</p>
+        <p class="tracked text-xs text-[var(--color-text-faint)] mb-4">
+          {guest ? `Find ${guest}` : 'Links'}
+        </p>
         <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2">
           {guestLinks.map((link) => (
             <li>

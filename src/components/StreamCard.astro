@@ -31,7 +31,7 @@ const timeLabel = date.toLocaleTimeString('en-AU', {
         <span class="tracked text-xs text-[var(--color-text)] mr-3">● Live now</span>
       )}
       <span class="text-lg text-[var(--color-text)]">{title}</span>
-      <span class="text-[var(--color-text-muted)]"> — with {guest}</span>
+      {guest && <span class="text-[var(--color-text-muted)]"> — with {guest}</span>}
     </div>
     <span class="tracked-tight text-xs text-[var(--color-text-faint)]">
       {dateLabel}{status !== 'archived' && ` · ${timeLabel}`}

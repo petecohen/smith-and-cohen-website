@@ -2,7 +2,7 @@
 # Copy this file, rename it to your-session-slug.md (the filename becomes the URL),
 # fill in the fields, and delete the ones you don't need.
 title: 'Session title'
-guest: 'Guest Name'
+guest: 'Guest Name' # optional — delete this line for a Karl & Pete session with no guest
 date: 2026-08-01T19:30:00+08:00
 status: announced # announced → live → archived
 draft: true # remove (or set false) to publish

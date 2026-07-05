@@ -78,7 +78,7 @@ const links = [
               {nextStream.data.status === 'live' ? '● Live now' : 'Coming up'}
             </span>
             {' — '}
-            {nextStream.data.title} with {nextStream.data.guest}
+            {nextStream.data.title}{nextStream.data.guest && ` with ${nextStream.data.guest}`}
             {nextStream.data.status !== 'live' && ` · ${nextStreamDate}`} →
           </a>
         )}

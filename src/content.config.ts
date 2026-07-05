@@ -5,7 +5,8 @@ const streams = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/streams' }),
   schema: z.object({
     title: z.string(),
-    guest: z.string(),
+    // Optional — some sessions are just Karl & Pete, with no guest
+    guest: z.string().optional(),
     date: z.coerce.date(),
     status: z.enum(['announced', 'live', 'archived']).default('announced'),
     draft: z.boolean().default(false),

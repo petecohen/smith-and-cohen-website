@@ -41,15 +41,27 @@ const { scope, live = false, heading = 'Messages' } = Astro.props;
         aria-label="Your name"
         class="sm:w-48 bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
       />
-      <input
-        type="text"
-        name="body"
-        required
-        maxlength="1000"
-        placeholder="Say something…"
-        aria-label="Your message"
-        class="flex-1 bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
-      />
+      <div class="relative flex-1">
+        <input
+          type="text"
+          name="body"
+          required
+          maxlength="1000"
+          placeholder="Say something…"
+          aria-label="Your message"
+          class="w-full bg-transparent border border-[var(--color-border)] pl-4 pr-12 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+        />
+        <button
+          type="button"
+          data-emoji-toggle
+          aria-label="Add emoji"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-lg opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
+        >🙂</button>
+        <div
+          data-emoji-panel
+          class="hidden absolute right-0 bottom-full mb-2 z-10 w-64 max-h-40 overflow-y-auto p-2 bg-[var(--color-background-soft)] border border-[var(--color-border)] grid grid-cols-8 gap-1"
+        ></div>
+      </div>
       <button type="submit" class="pill cursor-pointer shrink-0">Post</button>
     </div>
     <p data-board-error class="hidden text-sm text-[var(--color-text-muted)]"></p>
@@ -87,6 +99,13 @@ const { scope, live = false, heading = 'Messages' } = Astro.props;
     return item;
   }
 
+  const EMOJI = [
+    '😀','😄','😁','😆','😅','😂','🙂','😉','😊','😍','😘','😎','🤩','🥳','🤔','🙌',
+    '👏','👍','👎','🙏','💪','✌️','🤘','👋','🔥','✨','⭐','🌟','💫','❤️','🧡','💛',
+    '💚','💙','💜','🖤','🤍','💯','🎶','🎵','🎸','🥁','🎹','🎤','🎧','🎉','🎊','😢',
+    '😭','😮','😱','😴','🤯','🫶','👀','☀️','🌙','🌊',
+  ];
+
   function initBoard(root: HTMLElement) {
     const scope = root.dataset.scope ?? 'general';
     const live = root.dataset.live === 'true';
@@ -96,8 +115,34 @@ const { scope, live = false, heading = 'Messages' } = Astro.props;
     const errorEl = root.querySelector('[data-board-error]') as HTMLElement;
     const nameInput = form.elements.namedItem('name') as HTMLInputElement;
     const bodyInput = form.elements.namedItem('body') as HTMLInputElement;
+    const emojiToggle = root.querySelector('[data-emoji-toggle]') as HTMLButtonElement;
+    const emojiPanel = root.querySelector('[data-emoji-panel]') as HTMLElement;
 
     nameInput.value = localStorage.getItem(NAME_KEY) ?? '';
+
+    // Emoji picker: insert at cursor, dependency-free
+    for (const emoji of EMOJI) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'text-lg leading-none hover:scale-125 transition-transform cursor-pointer';
+      btn.textContent = emoji;
+      btn.addEventListener('click', () => {
+        const start = bodyInput.selectionStart ?? bodyInput.value.length;
+        const end = bodyInput.selectionEnd ?? bodyInput.value.length;
+        bodyInput.value = bodyInput.value.slice(0, start) + emoji + bodyInput.value.slice(end);
+        const pos = start + emoji.length;
+        bodyInput.setSelectionRange(pos, pos);
+        bodyInput.focus();
+        emojiPanel.classList.add('hidden');
+      });
+      emojiPanel.appendChild(btn);
+    }
+    emojiToggle.addEventListener('click', () => emojiPanel.classList.toggle('hidden'));
+    document.addEventListener('click', (e) => {
+      if (!emojiPanel.contains(e.target as Node) && e.target !== emojiToggle) {
+        emojiPanel.classList.add('hidden');
+      }
+    });
 
     let latest: { name: string; body: string; created_at: string }[] = [];
     let pendingEl: HTMLElement | null = null;
