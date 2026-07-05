@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import MessageBoard from '../../components/MessageBoard.astro';
 
 export async function getStaticPaths() {
   const streams = (await getCollection('streams')).filter(
@@ -132,6 +133,14 @@ const statusLine = {
         </ul>
       </footer>
     )}
+
+    <div class="mt-16">
+      <MessageBoard
+        scope={stream.id}
+        live={status === 'live'}
+        heading={status === 'live' ? 'Live chat' : 'Messages'}
+      />
+    </div>
 
     <p class="text-center mt-16">
       <a href="/streams" class="pill-ghost">← All sessions</a>

@@ -1,0 +1,179 @@
+---
+interface Props {
+  scope: string;
+  live?: boolean;
+  heading?: string;
+}
+
+const { scope, live = false, heading = 'Messages' } = Astro.props;
+---
+
+<section
+  data-message-board
+  data-scope={scope}
+  data-live={live ? 'true' : 'false'}
+  class="border-t border-[var(--color-border)] pt-10"
+>
+  <h2 class="tracked text-xs text-[var(--color-text-muted)] mb-6 text-center">
+    — {heading} —
+  </h2>
+
+  <div data-board-list class="space-y-4 mb-8">
+    <p
+      data-board-empty
+      class="text-[var(--color-text-muted)] text-center border border-[var(--color-border)] px-6 py-8"
+    >
+      No messages yet — leave the first one.
+    </p>
+  </div>
+
+  <form data-board-form class="space-y-4" novalidate>
+    <p class="hidden" aria-hidden="true">
+      <label>Leave this field empty: <input name="website" tabindex="-1" autocomplete="off" /></label>
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4">
+      <input
+        type="text"
+        name="name"
+        required
+        maxlength="40"
+        placeholder="Your name"
+        aria-label="Your name"
+        class="sm:w-48 bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+      />
+      <input
+        type="text"
+        name="body"
+        required
+        maxlength="1000"
+        placeholder="Say something…"
+        aria-label="Your message"
+        class="flex-1 bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+      />
+      <button type="submit" class="pill cursor-pointer shrink-0">Post</button>
+    </div>
+    <p data-board-error class="hidden text-sm text-[var(--color-text-muted)]"></p>
+  </form>
+</section>
+
+<script>
+  const LIVE_POLL_MS = 8_000;
+  const IDLE_POLL_MS = 30_000;
+  const NAME_KEY = 'sc-board-name';
+
+  function timeLabel(iso: string): string {
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const time = d.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' });
+    if (sameDay) return time;
+    return `${d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })} · ${time}`;
+  }
+
+  function renderMessage(msg: { name: string; body: string; created_at: string }, pending = false) {
+    const item = document.createElement('div');
+    item.className =
+      'border border-[var(--color-border)] px-5 py-4' + (pending ? ' opacity-60' : '');
+    const meta = document.createElement('p');
+    meta.className = 'text-xs text-[var(--color-text-faint)] mb-1';
+    const who = document.createElement('span');
+    who.className = 'text-[var(--color-text-muted)]';
+    who.textContent = msg.name;
+    meta.append(who, ` · ${pending ? 'sending…' : timeLabel(msg.created_at)}`);
+    const body = document.createElement('p');
+    body.className = 'text-[var(--color-text)]';
+    body.textContent = msg.body;
+    item.append(meta, body);
+    return item;
+  }
+
+  function initBoard(root: HTMLElement) {
+    const scope = root.dataset.scope ?? 'general';
+    const live = root.dataset.live === 'true';
+    const list = root.querySelector('[data-board-list]') as HTMLElement;
+    const empty = root.querySelector('[data-board-empty]') as HTMLElement;
+    const form = root.querySelector('[data-board-form]') as HTMLFormElement;
+    const errorEl = root.querySelector('[data-board-error]') as HTMLElement;
+    const nameInput = form.elements.namedItem('name') as HTMLInputElement;
+    const bodyInput = form.elements.namedItem('body') as HTMLInputElement;
+
+    nameInput.value = localStorage.getItem(NAME_KEY) ?? '';
+
+    let latest: { name: string; body: string; created_at: string }[] = [];
+    let pendingEl: HTMLElement | null = null;
+
+    function paint() {
+      list.querySelectorAll(':scope > div').forEach((el) => el.remove());
+      empty.classList.toggle('hidden', latest.length > 0 || pendingEl !== null);
+      for (const msg of latest) list.appendChild(renderMessage(msg));
+      if (pendingEl) list.appendChild(pendingEl);
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch(`/api/messages?scope=${encodeURIComponent(scope)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        latest = data.messages ?? [];
+        paint();
+      } catch {
+        /* transient network failure — keep what we have */
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorEl.classList.add('hidden');
+      const name = nameInput.value.trim();
+      const body = bodyInput.value.trim();
+      if (!name || !body) return;
+
+      localStorage.setItem(NAME_KEY, name);
+      const optimistic = { name, body, created_at: new Date().toISOString() };
+      pendingEl = renderMessage(optimistic, true);
+      const sentBody = bodyInput.value;
+      bodyInput.value = '';
+      paint();
+
+      try {
+        const res = await fetch(`/api/messages?scope=${encodeURIComponent(scope)}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            body,
+            website: (form.elements.namedItem('website') as HTMLInputElement).value,
+          }),
+        });
+        pendingEl = null;
+        if (res.ok) {
+          const data = await res.json();
+          latest = [...latest, data.message];
+          paint();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          bodyInput.value = sentBody;
+          errorEl.textContent = data.error ?? 'Something went wrong — try again.';
+          errorEl.classList.remove('hidden');
+          paint();
+        }
+      } catch {
+        pendingEl = null;
+        bodyInput.value = sentBody;
+        errorEl.textContent = 'Network hiccup — try again.';
+        errorEl.classList.remove('hidden');
+        paint();
+      }
+    });
+
+    refresh();
+    const interval = live ? LIVE_POLL_MS : IDLE_POLL_MS;
+    setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, interval);
+  }
+
+  document
+    .querySelectorAll<HTMLElement>('[data-message-board]')
+    .forEach((el) => initBoard(el));
+</script>

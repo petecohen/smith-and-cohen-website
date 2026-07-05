@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "netlify",
+      "runtimeExecutable": "netlify",
+      "runtimeArgs": ["dev", "--port", "8888"],
+      "port": 8888
     }
   ]
 }

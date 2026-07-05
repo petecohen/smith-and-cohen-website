@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MessageBoard from '../components/MessageBoard.astro';
+---
+
+<Layout
+  title="Message Board — Smith & Cohen"
+  description="The Smith & Cohen message board — a persistent space off the big platforms."
+>
+  <article class="max-w-3xl mx-auto px-6 pt-32 pb-16">
+    <header class="text-center mb-12">
+      <p class="tracked text-xs text-[var(--color-text-muted)] mb-4">— Community —</p>
+      <h1 class="display-title text-4xl md:text-5xl mb-6">Message Board</h1>
+      <p class="text-base text-[var(--color-text-muted)] max-w-xl mx-auto">
+        A persistent space that isn't on one of the big platforms. Just pick a name
+        and say hello — no account needed. Each stream also has its own thread on its
+        session page.
+      </p>
+    </header>
+
+    <MessageBoard scope="general" heading="General" />
+
+    <p class="text-center mt-16">
+      <a href="/streams" class="pill-ghost">Live streams →</a>
+    </p>
+  </article>
+</Layout>
