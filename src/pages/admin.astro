@@ -1,0 +1,137 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Smith & Cohen" description="Moderation.">
+  <article class="max-w-3xl mx-auto px-6 pt-32 pb-16">
+    <header class="text-center mb-12">
+      <p class="tracked text-xs text-[var(--color-text-muted)] mb-4">— Moderation —</p>
+      <h1 class="display-title text-4xl md:text-5xl">Admin</h1>
+    </header>
+
+    <form data-admin-login class="max-w-sm mx-auto space-y-4">
+      <input
+        type="password"
+        name="password"
+        required
+        placeholder="Admin password"
+        aria-label="Admin password"
+        autocomplete="current-password"
+        class="w-full bg-transparent border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] focus:outline-none focus:border-[var(--color-text)] transition-colors"
+      />
+      <div class="flex items-center gap-4">
+        <button type="submit" class="pill cursor-pointer">Log in</button>
+        <p data-login-error class="hidden text-sm text-[var(--color-text-muted)]"></p>
+      </div>
+    </form>
+
+    <div data-admin-panel class="hidden">
+      <div class="flex items-center justify-between mb-8">
+        <p class="tracked text-xs text-[var(--color-text-muted)]">
+          All messages, newest first
+        </p>
+        <button data-admin-logout class="pill-ghost cursor-pointer text-xs">Log out</button>
+      </div>
+      <div data-admin-list class="space-y-4">
+        <p class="text-[var(--color-text-muted)] text-center py-8">Loading…</p>
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<script>
+  const loginForm = document.querySelector('[data-admin-login]') as HTMLFormElement;
+  const loginError = document.querySelector('[data-login-error]') as HTMLElement;
+  const panel = document.querySelector('[data-admin-panel]') as HTMLElement;
+  const listEl = document.querySelector('[data-admin-list]') as HTMLElement;
+  const logoutBtn = document.querySelector('[data-admin-logout]') as HTMLButtonElement;
+
+  function timeLabel(iso: string): string {
+    const d = new Date(iso);
+    return `${d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })} · ${d.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}`;
+  }
+
+  function render(messages: any[]) {
+    listEl.textContent = '';
+    if (messages.length === 0) {
+      const p = document.createElement('p');
+      p.className = 'text-[var(--color-text-muted)] text-center py-8';
+      p.textContent = 'No messages yet.';
+      listEl.appendChild(p);
+      return;
+    }
+    for (const msg of messages) {
+      const item = document.createElement('div');
+      item.className =
+        'border border-[var(--color-border)] px-5 py-4' + (msg.hidden ? ' opacity-50' : '');
+
+      const meta = document.createElement('p');
+      meta.className = 'text-xs text-[var(--color-text-faint)] mb-1';
+      meta.textContent = `${msg.name} · ${msg.scope} · ${timeLabel(msg.created_at)}${msg.hidden ? ' · HIDDEN' : ''}`;
+
+      const body = document.createElement('p');
+      body.className = 'text-[var(--color-text)] mb-3';
+      body.textContent = msg.body;
+
+      const actions = document.createElement('div');
+      actions.className = 'flex gap-3';
+      const mkBtn = (label: string, action: string) => {
+        const b = document.createElement('button');
+        b.className = 'pill-ghost cursor-pointer text-xs';
+        b.textContent = label;
+        b.addEventListener('click', async () => {
+          if (action === 'delete' && !confirm('Delete this message permanently?')) return;
+          await fetch('/api/admin/action', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ id: msg.id, action }),
+          });
+          load();
+        });
+        return b;
+      };
+      actions.appendChild(mkBtn(msg.hidden ? 'Unhide' : 'Hide', msg.hidden ? 'unhide' : 'hide'));
+      actions.appendChild(mkBtn('Delete', 'delete'));
+
+      item.append(meta, body, actions);
+      listEl.appendChild(item);
+    }
+  }
+
+  async function load(): Promise<boolean> {
+    const res = await fetch('/api/admin/messages');
+    if (!res.ok) return false;
+    const data = await res.json();
+    render(data.messages ?? []);
+    loginForm.classList.add('hidden');
+    panel.classList.remove('hidden');
+    return true;
+  }
+
+  loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    loginError.classList.add('hidden');
+    const password = (loginForm.elements.namedItem('password') as HTMLInputElement).value;
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
+      await load();
+    } else {
+      loginError.textContent = 'Wrong password.';
+      loginError.classList.remove('hidden');
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    panel.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+    (loginForm.elements.namedItem('password') as HTMLInputElement).value = '';
+  });
+
+  // If a session cookie already exists, skip the login form
+  load().catch(() => {});
+</script>

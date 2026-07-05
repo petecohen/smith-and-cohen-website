@@ -15,6 +15,25 @@ const json = (data: unknown, status = 200) =>
     headers: { 'content-type': 'application/json' },
   });
 
+// Fire-and-forget Telegram notification to Pete; must never fail the post
+async function notifyTelegram(scope: string, name: string, body: string, origin: string) {
+  const token = Netlify.env.get('TELEGRAM_BOT_TOKEN');
+  const chatId = Netlify.env.get('TELEGRAM_CHAT_ID');
+  if (!token || !chatId) return;
+  const where = scope === 'general' ? 'General board' : `Stream: ${scope}`;
+  const text = `💬 ${where}\n${name}: ${body.slice(0, 500)}\n\nModerate: ${origin}/admin`;
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch {
+    /* notification failure is deliberately swallowed */
+  }
+}
+
 async function hashIp(ip: string): Promise<string> {
   const salt = Netlify.env.get('IP_HASH_SALT') ?? 'smith-and-cohen-board';
   const bytes = new TextEncoder().encode(`${salt}:${ip}`);
@@ -89,6 +108,7 @@ export default async (req: Request, context: Context) => {
       values (${scope}, ${name}, ${body}, ${ipHash})
       returning id, name, body, created_at
     `;
+    await notifyTelegram(scope, name, body, url.origin);
     return json({ scope, message }, 201);
   }
 
