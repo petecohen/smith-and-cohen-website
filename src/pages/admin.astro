@@ -118,7 +118,12 @@ import Layout from '../layouts/Layout.astro';
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
-      await load();
+      const loaded = await load();
+      if (!loaded) {
+        loginError.textContent =
+          'Logged in, but your browser blocked the session cookie. Try reloading, or use a different browser.';
+        loginError.classList.remove('hidden');
+      }
     } else {
       loginError.textContent = 'Wrong password.';
       loginError.classList.remove('hidden');

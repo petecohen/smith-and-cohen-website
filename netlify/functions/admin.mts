@@ -51,6 +51,12 @@ export default async (req: Request) => {
   const url = new URL(req.url);
   const route = url.pathname.replace(/\/$/, '');
 
+  // Only mark the cookie Secure over real HTTPS — otherwise Safari drops it
+  // on http://localhost during local dev, making login silently fail.
+  const isHttps =
+    req.headers.get('x-forwarded-proto') === 'https' || url.protocol === 'https:';
+  const secureAttr = isHttps ? '; Secure' : '';
+
   if (route === '/api/admin/login' && req.method === 'POST') {
     let payload: Record<string, unknown>;
     try {
@@ -63,13 +69,13 @@ export default async (req: Request) => {
     }
     const token = await sessionToken(password);
     return json({ ok: true }, 200, {
-      'set-cookie': `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=${COOKIE_MAX_AGE}`,
+      'set-cookie': `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Strict${secureAttr}; Max-Age=${COOKIE_MAX_AGE}`,
     });
   }
 
   if (route === '/api/admin/logout' && req.method === 'POST') {
     return json({ ok: true }, 200, {
-      'set-cookie': `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=0`,
+      'set-cookie': `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict${secureAttr}; Max-Age=0`,
     });
   }
 
