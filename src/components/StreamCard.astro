@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  stream: CollectionEntry<'streams'>;
+}
+
+const { stream } = Astro.props;
+const { title, guest, date, status } = stream.data;
+
+const dateLabel = date.toLocaleDateString('en-AU', {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const timeLabel = date.toLocaleTimeString('en-AU', {
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZone: 'Australia/Perth',
+});
+---
+
+<a
+  href={`/streams/${stream.id}`}
+  class="block border border-[var(--color-border)] px-6 py-5 hover:border-[var(--color-text)] transition-colors"
+>
+  <div class="flex items-baseline justify-between gap-4 flex-wrap">
+    <div>
+      {status === 'live' && (
+        <span class="tracked text-xs text-[var(--color-text)] mr-3">● Live now</span>
+      )}
+      <span class="text-lg text-[var(--color-text)]">{title}</span>
+      <span class="text-[var(--color-text-muted)]"> — with {guest}</span>
+    </div>
+    <span class="tracked-tight text-xs text-[var(--color-text-faint)]">
+      {dateLabel}{status !== 'archived' && ` · ${timeLabel}`}
+    </span>
+  </div>
+</a>

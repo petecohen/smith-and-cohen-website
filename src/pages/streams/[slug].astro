@@ -1,0 +1,140 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const streams = (await getCollection('streams')).filter(
+    (s) => import.meta.env.DEV || !s.data.draft
+  );
+  return streams.map((stream) => ({
+    params: { slug: stream.id },
+    props: { stream },
+  }));
+}
+
+const { stream } = Astro.props;
+const { title, guest, date, status, youtubeId, images, audio, guestLinks } = stream.data;
+const { Content } = await render(stream);
+const hasBody = stream.body && stream.body.trim().length > 0;
+
+const dateLabel = date.toLocaleDateString('en-AU', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const timeLabel = date.toLocaleTimeString('en-AU', {
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZone: 'Australia/Perth',
+});
+
+const statusLine = {
+  announced: `Streaming ${dateLabel} · ${timeLabel} AWST`,
+  live: 'Live now',
+  archived: dateLabel,
+}[status];
+---
+
+<Layout
+  title={`${title} — Smith & Cohen`}
+  description={`${title}, a live-stream session with ${guest}.`}
+>
+  <article class="max-w-3xl mx-auto px-6 pt-32 pb-16">
+    <header class="text-center mb-12">
+      <p class="tracked text-xs text-[var(--color-text-muted)] mb-4">
+        {status === 'live' ? '— ● Live now —' : `— ${statusLine} —`}
+      </p>
+      <h1 class="display-title text-4xl md:text-5xl mb-4">{title}</h1>
+      <p class="text-base text-[var(--color-text-muted)]">with {guest}</p>
+    </header>
+
+    {youtubeId ? (
+      <div class="mb-12 aspect-video">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
+          title={title}
+          class="w-full h-full border border-[var(--color-border)]"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+    ) : (
+      status === 'announced' && (
+        <p class="mb-12 text-center text-[var(--color-text-muted)] border border-[var(--color-border)] px-6 py-8">
+          The stream will appear right here when we go live.
+        </p>
+      )
+    )}
+
+    {hasBody && (
+      <div class="prose mx-auto mb-12">
+        <Content />
+      </div>
+    )}
+
+    {images.length > 0 && (
+      <section class="mb-12">
+        <h2 class="tracked text-xs text-[var(--color-text-muted)] mb-6 text-center">
+          — From {guest} —
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {images.map((image) => (
+            <figure>
+              <img
+                src={image.src}
+                alt={image.alt}
+                loading="lazy"
+                class="w-full border border-[var(--color-border)]"
+              />
+              {image.caption && (
+                <figcaption class="text-xs text-[var(--color-text-faint)] mt-2">
+                  {image.caption}
+                </figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {audio.length > 0 && (
+      <section class="mb-12 space-y-4">
+        {audio.map((track) => (
+          <div>
+            {track.title && (
+              <p class="tracked-tight text-xs text-[var(--color-text-muted)] mb-2">
+                {track.title}
+              </p>
+            )}
+            <audio controls preload="none" src={track.src} class="w-full"></audio>
+          </div>
+        ))}
+      </section>
+    )}
+
+    {guestLinks.length > 0 && (
+      <footer class="text-center border-t border-[var(--color-border)] pt-8">
+        <p class="tracked text-xs text-[var(--color-text-faint)] mb-4">Find {guest}</p>
+        <ul class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {guestLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors underline underline-offset-4"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </footer>
+    )}
+
+    <p class="text-center mt-16">
+      <a href="/streams" class="pill-ghost">← All sessions</a>
+    </p>
+  </article>
+</Layout>

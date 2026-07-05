@@ -1,5 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const upcoming = (await getCollection('streams'))
+  .filter((s) => import.meta.env.DEV || !s.data.draft)
+  .filter((s) => s.data.status === 'announced' || s.data.status === 'live')
+  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+const nextStream = upcoming[0];
+const nextStreamDate = nextStream?.data.date.toLocaleDateString('en-AU', {
+  day: 'numeric',
+  month: 'long',
+});
 
 const links = [
   { label: 'Bandcamp', href: 'https://smithandcohen.bandcamp.com' },
@@ -58,8 +69,23 @@ const links = [
           Previously known as Sodastream →
         </a>
 
+        {nextStream && (
+          <a
+            href={`/streams/${nextStream.id}`}
+            class="block mb-8 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+          >
+            <span class="tracked text-xs">
+              {nextStream.data.status === 'live' ? '● Live now' : 'Coming up'}
+            </span>
+            {' — '}
+            {nextStream.data.title} with {nextStream.data.guest}
+            {nextStream.data.status !== 'live' && ` · ${nextStreamDate}`} →
+          </a>
+        )}
+
         <div class="flex items-center gap-3">
-          <a href="/contact" class="pill">Contact</a>
+          <a href="/streams" class="pill">Streams</a>
+          <a href="/contact" class="pill-ghost">Contact</a>
           <a
             href="https://www.instagram.com/smithandcohen/"
             target="_blank"
