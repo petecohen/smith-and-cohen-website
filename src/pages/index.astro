@@ -15,6 +15,7 @@ const nextStreamDate = nextStream?.data.date.toLocaleDateString('en-AU', {
 const links = [
   { label: 'Bandcamp', href: 'https://smithandcohen.bandcamp.com' },
   { label: 'Spotify', href: 'https://open.spotify.com/artist/6JQMn0k6YGtE73ym4KrcOU' },
+  { label: 'Second Press', href: 'https://secondpress.com.au/artist/c2529f76-9135-4732-92a9-6bd8c2248dce' },
   { label: 'Subvert', href: 'https://www.subvert.fm/smith-and-cohen' },
   { label: 'Apple Music', href: 'https://music.apple.com/au/artist/smith-cohen/1826886417' },
   { label: 'YouTube', href: 'https://www.youtube.com/@SmithandCohen' },
@@ -71,7 +72,7 @@ const links = [
 
         {nextStream && (
           <a
-            href={`/streams/${nextStream.id}`}
+            href={`/live-streams/${nextStream.id}`}
             class="block mb-8 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           >
             <span class="tracked text-xs">
@@ -84,7 +85,7 @@ const links = [
         )}
 
         <div class="flex items-center gap-3">
-          <a href="/streams" class="pill">Streams</a>
+          <a href="/live-streams" class="pill">Live Streams</a>
           <a href="/contact" class="pill-ghost">Contact</a>
           <a
             href="https://www.instagram.com/smithandcohen/"

@@ -1,3 +1,23 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+# Routes were renamed /streams → /live-streams and /board → /message-board.
+# Keep the old URLs working.
+[[redirects]]
+  from = "/streams"
+  to = "/live-streams"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/streams/*"
+  to = "/live-streams/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/board"
+  to = "/message-board"
+  status = 301
+  force = true
