@@ -7,6 +7,9 @@ date: 2026-08-01T19:30:00+08:00
 status: announced # announced → live → archived
 draft: true # remove (or set false) to publish
 youtubeId: '' # the YouTube video ID, e.g. dQw4w9WgXcQ — same ID works live and as replay
+tracklist: # set list, in order — delete if not relevant
+  - Track one
+  - Track two
 images:
   - src: /images/streams/example.jpg
     alt: 'What the image shows'

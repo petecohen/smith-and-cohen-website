@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { stream } = Astro.props;
-const { title, guest, date, status, youtubeId, images, audio, guestLinks } = stream.data;
+const { title, guest, date, status, youtubeId, tracklist, images, audio, guestLinks } = stream.data;
 const { Content } = await render(stream);
 const hasBody = stream.body && stream.body.trim().length > 0;
 
@@ -84,6 +84,17 @@ const statusLine = {
         {' & '}
         <a href={SOCIALS.facebook} target="_blank" rel="noopener noreferrer" class="text-[var(--color-text)] underline underline-offset-4">Facebook</a>.
       </p>
+    )}
+
+    {tracklist.length > 0 && (
+      <section class="mb-12 max-w-xs mx-auto">
+        <h2 class="tracked text-xs text-[var(--color-text-muted)] mb-6 text-center">
+          — Set list —
+        </h2>
+        <ol class="space-y-2 text-center text-[var(--color-text)]">
+          {tracklist.map((track) => <li>{track}</li>)}
+        </ol>
+      </section>
     )}
 
     {hasBody && (

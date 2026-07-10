@@ -12,6 +12,8 @@ const streams = defineCollection({
     draft: z.boolean().default(false),
     // YouTube video ID — the live stream and the replay share it once the VOD is up
     youtubeId: z.string().optional(),
+    // Set list — track titles played in the session, in order
+    tracklist: z.array(z.string()).default([]),
     // Guest-contributed artifacts shown on the session page
     images: z
       .array(
