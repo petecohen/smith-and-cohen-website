@@ -1,0 +1,56 @@
+---
+import { parseTranscript, platformLabel, type TranscriptFormat } from '../lib/transcript';
+
+interface TranscriptBlock {
+  platform: string;
+  label?: string;
+  format?: TranscriptFormat;
+  raw: string;
+}
+
+interface Props {
+  transcript: TranscriptBlock[];
+}
+
+const { transcript } = Astro.props;
+
+// Parse each pasted block once, at build time, and drop any that yield nothing.
+const sections = transcript
+  .map((block) => ({
+    heading: platformLabel(block.platform, block.label),
+    entries: parseTranscript(block.raw, block.format ?? 'auto'),
+  }))
+  .filter((section) => section.entries.length > 0);
+---
+
+{sections.length > 0 && (
+  <section class="mb-12 border-t border-[var(--color-border)] pt-10">
+    <h2 class="tracked text-xs text-[var(--color-text-muted)] mb-2 text-center">
+      — Comments from the stream —
+    </h2>
+    <p class="text-xs text-[var(--color-text-faint)] text-center mb-8 max-w-md mx-auto">
+      Archived after the session from the social streams. Read-only — to add your
+      own, use the messages below.
+    </p>
+
+    <div class="space-y-8 max-w-2xl mx-auto">
+      {sections.map((section) => (
+        <div>
+          <h3 class="tracked-tight text-xs text-[var(--color-text-muted)] mb-4">
+            {section.heading}
+          </h3>
+          <ul class="space-y-3">
+            {section.entries.map((entry) => (
+              <li class="bg-[var(--color-background-soft)] border-l-2 border-[var(--color-border)] pl-4 pr-4 py-3">
+                <p class="text-xs text-[var(--color-text-muted)] mb-1">
+                  {entry.author || 'Anonymous'}
+                </p>
+                <p class="text-[var(--color-text)]">{entry.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+)}

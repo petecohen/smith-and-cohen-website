@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import MessageBoard from '../../components/MessageBoard.astro';
+import CommentTranscript from '../../components/CommentTranscript.astro';
 import { SOCIALS } from '../../consts';
 
 export async function getStaticPaths() {
@@ -15,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { stream } = Astro.props;
-const { title, guest, date, status, youtubeId, tracklist, images, audio, guestLinks } = stream.data;
+const { title, guest, date, status, youtubeId, tracklist, images, audio, guestLinks, commentTranscript } = stream.data;
 const { Content } = await render(stream);
 const hasBody = stream.body && stream.body.trim().length > 0;
 
@@ -172,6 +173,12 @@ const statusLine = {
         heading={status === 'live' ? 'Live chat' : 'Messages'}
       />
     </div>
+
+    {commentTranscript.length > 0 && (
+      <div class="mt-16">
+        <CommentTranscript transcript={commentTranscript} />
+      </div>
+    )}
 
     <p class="text-center mt-16">
       <a href="/live-streams" class="pill-ghost">← All sessions</a>

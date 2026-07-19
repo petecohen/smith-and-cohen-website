@@ -41,6 +41,20 @@ const streams = defineCollection({
         })
       )
       .default([]),
+    // Post-hoc comment archive: raw comment exports pasted after the stream, one
+    // block per platform. `raw` is copied straight from Facebook / Instagram (or
+    // screenshot-to-text); the formatter turns it into an attributed transcript.
+    // No Meta API — this is human-pasted archive material. See src/lib/transcript.ts.
+    commentTranscript: z
+      .array(
+        z.object({
+          platform: z.enum(['facebook', 'instagram', 'youtube', 'other']).default('other'),
+          label: z.string().optional(), // override the section heading
+          format: z.enum(['auto', 'csv', 'lines', 'blocks']).default('auto'),
+          raw: z.string(),
+        })
+      )
+      .default([]),
   }),
 });
 
